@@ -74,5 +74,5 @@ app.get("/status", (req, res) => {
 
 // Start HTTP server
 server.listen(port, () => {
-  console.log(`🚀 Proxy server running at http://localhost:${port}`);
+  console.log(`🚀 Proxy server running at https://mqtt-proxy-server.onrender.com`);
 });
