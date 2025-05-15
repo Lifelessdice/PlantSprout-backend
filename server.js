@@ -2,7 +2,7 @@ const mqtt = require("mqtt");
 const express = require("express");
 const http = require("http");
 
-const db = require("./firebase")
+const db = require("./firebase/firebase")
 
 // Setup Express server
 const app = express();
