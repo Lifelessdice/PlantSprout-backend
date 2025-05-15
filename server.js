@@ -1,92 +1,34 @@
-const mqtt = require("mqtt");
 const express = require("express");
 const http = require("http");
 
-const db = require("./firebase/firebase")
+const db = require("./firebase/firebase");
+
+// Import mqttClient and mqttData from separate file
+const { mqttClient, mqttData } = require("./mqtt/mqttClient");
 
 // Setup Express server
 const app = express();
 const server = http.createServer(app);
 const port = 5000;
 
-// Store MQTT data
-let mqttData = {
-  temperature: null,
-  humidity: null,
-  light: null,
-  moisture: null,
-};
-
-
 // New test endpoint
 app.get("/firebase-test", async (req, res) => {
   try {
     //Write a test doc
     const docRef = db.collection("test").doc("connection");
-    await docRef.set({message: "Hello from backend!" });
+    await docRef.set({ message: "Hello from backend!" });
 
     //Read it back
     const doc = await docRef.get();
-    if(doc.exists) {
+    if (doc.exists) {
       res.json({ success: true, data: doc.data() });
     } else {
       res.json({ success: false, message: "No document found" });
     }
   } catch (err) {
     console.error("Firebase test failed", err);
-    res.status(500).json({success: false, error: err.message});
+    res.status(500).json({ success: false, error: err.message });
   }
-});
-
-// MQTT client setup
-const mqttClient = mqtt.connect("mqtt://broker.hivemq.com:1883");
-
-mqttClient.on("connect", function () {
-  console.log("✅ Connected to HiveMQ");
-
-  const topics = [
-    "CROWmium/rtl8720dn/temperature",
-    "CROWmium/rtl8720dn/humidity",
-    "CROWmium/rtl8720dn/light",
-    "CROWmium/rtl8720dn/moisture",
-  ];
-
-  topics.forEach((topic) => {
-    mqttClient.subscribe(topic, function (err) {
-      if (err) {
-        console.log(`❌ Subscription error on ${topic}:`, err);
-      } else {
-        console.log(`📡 Subscribed to ${topic}`);
-      }
-    });
-  });
-});
-
-mqttClient.on("message", function (topic, message) {
-  // Update the relevant data when a message is received
-  console.log(`📩 Message received:`);
-  console.log(`  ➤ Topic: ${topic}`);
-  console.log(`  ➤ Payload: ${message.toString()}`);
-
-  switch (topic) {
-    case "CROWmium/rtl8720dn/temperature":
-      mqttData.temperature = message.toString();
-      break;
-    case "CROWmium/rtl8720dn/humidity":
-      mqttData.humidity = message.toString();
-      break;
-    case "CROWmium/rtl8720dn/light":
-      mqttData.light = message.toString();
-      break;
-    case "CROWmium/rtl8720dn/moisture":
-      mqttData.moisture = message.toString();
-      break;
-    default:
-      break;
-  }
-
-  // Display the updated data on the server side (to verify it's working)
-  console.log("Updated Data on Server:", mqttData);
 });
 
 // Add HTTP endpoint to serve the MQTT data
