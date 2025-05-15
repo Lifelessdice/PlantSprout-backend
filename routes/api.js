@@ -22,6 +22,8 @@ router.post("/verifyUser", async (req, res) => {
     const decodedToken = await auth.verifyIdToken(idToken);
     const { uid, email } = decodedToken;
 
+    console.log("Received token, user verified:", uid, email);
+
     // Save or update user in Firestore
     const userRef = db.collection("users").doc(uid);
     await userRef.set(
