@@ -1,18 +1,22 @@
 const express = require("express");
 const http = require("http");
-
-const db = require("./firebase/firebaseAdmin");
-
-// Import mqtt API routes (only /status for now)
+const admin = require("./firebase/firebaseAdmin"); // full SDK instance
 const apiRoutes = require("./routes/api");
 
 const app = express();
 const server = http.createServer(app);
 const port = 5000;
 
-// Firebase test endpoint stays here as-is
+// Middleware
+app.use(express.json());
+
+// Routes
+app.use("/api", apiRoutes);
+
+// Firebase test endpoint
 app.get("/firebase-test", async (req, res) => {
   try {
+    const db = admin.firestore();
     const docRef = db.collection("test").doc("connection");
     await docRef.set({ message: "Hello from backend!" });
 
@@ -28,14 +32,9 @@ app.get("/firebase-test", async (req, res) => {
   }
 });
 
-// Mount MQTT API routes under /api path
-app.use(express.json());
-app.use("/api", apiRoutes);
-
-// No HTML view routes included anymore
-
+// Server start
 server.listen(port, () => {
   console.log(`🚀 Proxy server running at http://localhost:${port}`);
-  console.log(`You can access the MQTT status at http://localhost:${port}/api/status`);
-  console.log(`Firebase test endpoint is at http://localhost:${port}/firebase-test`);
+  console.log(`📡 MQTT status: http://localhost:${port}/api/status`);
+  console.log(`🧪 Firebase test: http://localhost:${port}/firebase-test`);
 });

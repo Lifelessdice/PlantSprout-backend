@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { mqttData } = require("../mqtt/mqttClient");
 const admin = require("../firebase/firebaseAdmin"); // Admin SDK
-
+const db = admin.firestore();
+const auth = admin.auth();
 
 // Serve MQTT data
 router.get("/status", (req, res) => {
@@ -18,17 +19,17 @@ router.post("/verifyUser", async (req, res) => {
 
   try {
     // Verify the token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const decodedToken = await auth.verifyIdToken(idToken);
     const { uid, email } = decodedToken;
 
-    // Optionally: save or update user in Firestore
-    const userRef = admin.firestore().collection("users").doc(uid);
+    // Save or update user in Firestore
+    const userRef = db.collection("users").doc(uid);
     await userRef.set(
       {
         email,
         lastLogin: new Date(),
       },
-      { merge: true } // This won't overwrite existing data
+      { merge: true }
     );
 
     res.status(200).json({
