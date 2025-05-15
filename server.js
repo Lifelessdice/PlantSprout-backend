@@ -2,6 +2,8 @@ const mqtt = require("mqtt");
 const express = require("express");
 const http = require("http");
 
+const db = require("./firebase")
+
 // Setup Express server
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +16,27 @@ let mqttData = {
   light: null,
   moisture: null,
 };
+
+
+// New test endpoint
+app.get("/firebase-test", async (req, res) => {
+  try {
+    //Write a test doc
+    const docRef = db.collection("test").doc("connection");
+    await docRef.set({message: "Hello from backend!" });
+
+    //Read it back
+    const doc = await docRef.get();
+    if(doc.exists) {
+      res.json({ success: true, data: doc.data() });
+    } else {
+      res.json({ success: false, message: "No document found" });
+    }
+  } catch (err) {
+    console.error("Firebase test failed", err);
+    res.status(500).json({success: false, error: err.message});
+  }
+});
 
 // MQTT client setup
 const mqttClient = mqtt.connect("mqtt://broker.hivemq.com:1883");
