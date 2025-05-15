@@ -36,4 +36,20 @@ router.post("/verifyUser", async (req, res) => {
   }
 });
 
+// Get plants from the user.
+router.get("/plants", async (req, res) => {
+  const idToken = req.headers.authorization?.split("Bearer ")[1];
+  if (!idToken) return res.status(401).json({ error: "Missing ID token" });
+
+  try {
+    const decodedToken = await verifyUserToken(idToken);
+    const uid = decodedToken.uid;
+
+    const plants = await getPlantsForUser(uid);
+    res.status(200).json({ plants });
+  } catch (error) {
+    res.status(403).json({ error: "Unauthorized or failed to fetch plants"});
+  }
+});
+
 module.exports = router;
