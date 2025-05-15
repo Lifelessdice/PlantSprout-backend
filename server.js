@@ -1,7 +1,7 @@
 const express = require("express");
 const http = require("http");
 
-const db = require("./firebase/firebase");
+const db = require("./firebase/firebaseAdmin");
 
 // Import mqtt API routes (only /status for now)
 const apiRoutes = require("./routes/api");
@@ -29,6 +29,7 @@ app.get("/firebase-test", async (req, res) => {
 });
 
 // Mount MQTT API routes under /api path
+app.use(express.json());
 app.use("/api", apiRoutes);
 
 // No HTML view routes included anymore
