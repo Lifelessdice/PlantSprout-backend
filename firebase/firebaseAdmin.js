@@ -1,12 +1,20 @@
+// firebase/firebaseAdmin.js
 const admin = require("firebase-admin");
 
-// Parse your service account JSON from environment variable
 const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
 
-// Initialize Firebase Admin SDK with service account credentials
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Initialize Admin SDK (only once)
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
+const db = admin.firestore();
+const auth = admin.auth();
 
-module.exports = admin;
+module.exports = {
+  admin,
+  db,
+  auth,
+};
