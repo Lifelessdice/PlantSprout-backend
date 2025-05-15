@@ -3,22 +3,19 @@ const http = require("http");
 
 const db = require("./firebase/firebase");
 
-// Import mqttClient and mqttData from separate file
-const { mqttClient, mqttData } = require("./mqtt/mqttClient");
+// Import mqtt API routes (only /status for now)
+const apiRoutes = require("./routes/api");
 
-// Setup Express server
 const app = express();
 const server = http.createServer(app);
 const port = 5000;
 
-// New test endpoint
+// Firebase test endpoint stays here as-is
 app.get("/firebase-test", async (req, res) => {
   try {
-    //Write a test doc
     const docRef = db.collection("test").doc("connection");
     await docRef.set({ message: "Hello from backend!" });
 
-    //Read it back
     const doc = await docRef.get();
     if (doc.exists) {
       res.json({ success: true, data: doc.data() });
@@ -31,34 +28,13 @@ app.get("/firebase-test", async (req, res) => {
   }
 });
 
-// Add HTTP endpoint to serve the MQTT data
-app.get("/status", (req, res) => {
-  // Send the latest MQTT data as JSON
-  res.json(mqttData);
-});
+// Mount MQTT API routes under /api path
+app.use("/api", apiRoutes);
 
-// Add a simple HTML endpoint to display the data
-app.get("/", (req, res) => {
-  // Render a simple HTML page with the current MQTT data
-  res.send(`
-    <html>
-      <head>
-        <title>MQTT Data</title>
-      </head>
-      <body>
-        <h1>Latest MQTT Data</h1>
-        <p><strong>Temperature:</strong> ${mqttData.temperature || "N/A"}</p>
-        <p><strong>Humidity:</strong> ${mqttData.humidity || "N/A"}</p>
-        <p><strong>Light:</strong> ${mqttData.light || "N/A"}</p>
-        <p><strong>Soil Moisture:</strong> ${mqttData.moisture || "N/A"}</p>
-        <p><em>Data is updated in real-time via MQTT messages!</em></p>
-      </body>
-    </html>
-  `);
-});
+// No HTML view routes included anymore
 
-// Start HTTP server
 server.listen(port, () => {
   console.log(`🚀 Proxy server running at http://localhost:${port}`);
-  console.log(`You can access the status page at http://localhost:${port}`);
+  console.log(`You can access the MQTT status at http://localhost:${port}/api/status`);
+  console.log(`Firebase test endpoint is at http://localhost:${port}/firebase-test`);
 });
