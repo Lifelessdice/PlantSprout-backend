@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { mqttData } = require("../mqtt/mqttClient");
 const { verifyIdToken } = require("../firebase/firebase");
-const { getPlantsByUserId } = require("../firebase/plants");
+const { getPlantsByUserId } = require("../firebase/plant");
 
 // Serve MQTT data
 router.get("/status", (req, res) => {
