@@ -1,37 +1,46 @@
 const express = require("express");
 const router = express.Router();
-const { mqttData } = require("../mqtt/mqttClient");
-const { verifyIdToken } = require("../firebase/firebase");
-const { getPlantsByUserId } = require("../firebase/plant");
 
-// Serve MQTT data
-router.get("/status", (req, res) => {
-  res.json(mqttData);
+const { mqttData } = require("../mqtt/mqttClient");
+const { getPlantsByUserId } = require("../firebase/plant");
+const { checkPlantConditions } = require("../utils/plantStatusChecker");
+
+// In-memory store for registered UIDs (replace with DB in production)
+const registeredUIDs = new Set();
+
+// POST /register-uid — store the UID from frontend
+router.post("/register-uid", (req, res) => {
+  const { uid } = req.body;
+
+  if (!uid) {
+    return res.status(400).json({ error: "UID is required" });
+  }
+
+  registeredUIDs.add(uid);
+  console.log("Registered UID:", uid);
+
+  res.json({ message: "UID registered successfully" });
 });
 
-// Use POST to match your frontend
-router.post("/plants", async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "Missing Authorization header" });
-  }
-
-  const idToken = authHeader.split("Bearer ")[1];
-  if (!idToken) {
-    return res.status(401).json({ error: "Missing ID token" });
-  }
-
+// GET /plants — return plants + status for all registered UIDs
+router.get("/plants", async (req, res) => {
   try {
-    const { uid } = await verifyIdToken(idToken);
-    const plants = await getPlantsByUserId(uid);
+    let allPlants = [];
 
-    console.log(`🌿 Plants for user ${uid}:`);
-    console.dir(plants, { depth: null });
+    // For each registered UID, fetch plants and append with status
+    for (const uid of registeredUIDs) {
+      const plants = await getPlantsByUserId(uid);
+      const plantsWithStatus = plants.map((plant) => ({
+        ...plant,
+        status: checkPlantConditions(plant, mqttData),
+      }));
+      allPlants = allPlants.concat(plantsWithStatus);
+    }
 
-    res.json(plants);
+    res.json(allPlants);
   } catch (error) {
-    console.error("❌ Failed to fetch plants:", error);
-    res.status(500).json({ error: "Failed to fetch plants" });
+    console.error("❌ Failed to fetch plant data with status:", error);
+    res.status(500).json({ error: "Failed to fetch plant data with status" });
   }
 });
 
