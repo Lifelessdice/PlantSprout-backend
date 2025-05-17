@@ -13,19 +13,13 @@ router.get("/status", (req, res) => {
 // In-memory store for registered UIDs (replace with DB in production)
 const registeredUIDs = new Set();
 
-// POST /register-uid — store the UID from frontend
 router.post("/register-uid", (req, res) => {
-  const { uid } = req.body;
+  console.log("✅ Received POST /register-uid");
+  console.log("📦 Request body:", req.body);
 
-  if (!uid) {
-    return res.status(400).json({ error: "UID is required" });
-  }
-
-  registeredUIDs.add(uid);
-  console.log("Registered UID:", uid);
-
-  res.json({ message: "UID registered successfully" });
+  res.json({ message: "Received something!" });
 });
+
 
 // GET /plants — return plants + status for all registered UIDs
 router.get("/plants", async (req, res) => {
