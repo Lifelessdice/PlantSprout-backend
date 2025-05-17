@@ -10,7 +10,6 @@ const { checkPlantConditions } = require("../utils/plantStatusChecker");
 router.get("/status", (req, res) => {
   res.json(mqttData);
 });
-
 // In-memory store for registered UIDs (replace with DB in production)
 const registeredUIDs = new Set();
 
