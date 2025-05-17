@@ -6,19 +6,32 @@ const { getPlantsByUserId } = require("../firebase/plant");
 const { checkPlantConditions } = require("../utils/plantStatusChecker");
 
 
+const registeredUIDs = new Set();
+
 // GET /status — returns raw MQTT data
 router.get("/status", (req, res) => {
   res.json(mqttData);
 });
-// In-memory store for registered UIDs (replace with DB in production)
-const registeredUIDs = new Set();
-
+// POST /register-uid — store UID in memory
 router.post("/register-uid", (req, res) => {
-  console.log("✅ Received POST /register-uid");
-  console.log("📦 Request body:", req.body);
+  const { uid } = req.body;
 
-  res.json({ message: "Received something!" });
+  if (!uid) {
+    return res.status(400).json({ error: "UID is required" });
+  }
+
+  registeredUIDs.add(uid);
+  console.log("✅ UID registered and stored:", uid);
+  console.log("📋 Current UIDs:", Array.from(registeredUIDs)); // For debug
+
+  res.json({ message: "UID stored in memory" });
 });
+
+
+router.get("/uids", (req, res) => {
+  res.json({ uids: Array.from(registeredUIDs) });
+});
+
 
 
 // GET /plants — return plants + status for all registered UIDs
