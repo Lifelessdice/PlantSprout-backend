@@ -5,13 +5,13 @@ const { mqttData } = require("../mqtt/mqttClient");
 const { getPlantsByUserId } = require("../firebase/plant");
 const { checkPlantConditions } = require("../utils/plantStatusChecker");
 
-
-const registeredUIDs = new Set();
+let registeredUID = null;
 
 // GET /status — returns raw MQTT data
 router.get("/status", (req, res) => {
   res.json(mqttData);
 });
+
 // POST /register-uid — store UID in memory
 router.post("/register-uid", (req, res) => {
   const { uid } = req.body;
@@ -20,39 +20,29 @@ router.post("/register-uid", (req, res) => {
     return res.status(400).json({ error: "UID is required" });
   }
 
-  registeredUIDs.add(uid);
+  registeredUID = uid;
   console.log("✅ UID registered and stored:", uid);
-  console.log("📋 Current UIDs:", Array.from(registeredUIDs)); // For debug
 
   res.json({ message: "UID stored in memory" });
 });
 
-
-router.get("/uids", (req, res) => {
-  res.json({ uids: Array.from(registeredUIDs) });
-});
-
-
-
-// GET /plants — return plants + status for all registered UIDs
+// GET /plants — fetch plants for the registered UID and log them
 router.get("/plants", async (req, res) => {
   try {
-    let allPlants = [];
-
-    // For each registered UID, fetch plants and append with status
-    for (const uid of registeredUIDs) {
-      const plants = await getPlantsByUserId(uid);
-      const plantsWithStatus = plants.map((plant) => ({
-        ...plant,
-        status: checkPlantConditions(plant, mqttData),
-      }));
-      allPlants = allPlants.concat(plantsWithStatus);
+    if (!registeredUID) {
+      return res.status(400).json({ error: "No UID registered" });
     }
 
-    res.json(allPlants);
+    console.log("Fetching plants for UID:", registeredUID);
+
+    const plants = await getPlantsByUserId(registeredUID);
+    console.log("Plants fetched from DB:", plants);
+
+    // For now, just return the raw plants data
+    res.json(plants);
   } catch (error) {
-    console.error("❌ Failed to fetch plant data with status:", error);
-    res.status(500).json({ error: "Failed to fetch plant data with status" });
+    console.error("❌ Failed to fetch plants:", error);
+    res.status(500).json({ error: "Failed to fetch plants" });
   }
 });
 
