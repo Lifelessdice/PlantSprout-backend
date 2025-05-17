@@ -5,6 +5,12 @@ const { mqttData } = require("../mqtt/mqttClient");
 const { getPlantsByUserId } = require("../firebase/plant");
 const { checkPlantConditions } = require("../utils/plantStatusChecker");
 
+
+// GET /status — returns raw MQTT data
+router.get("/status", (req, res) => {
+  res.json(mqttData);
+});
+
 // In-memory store for registered UIDs (replace with DB in production)
 const registeredUIDs = new Set();
 
