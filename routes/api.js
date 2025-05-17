@@ -33,24 +33,19 @@ router.get("/plants", async (req, res) => {
       return res.status(400).json({ error: "No UID registered" });
     }
 
-    console.log("Fetching plants for UID:", registeredUID);
-
     const plants = await getPlantsByUserId(registeredUID);
-    console.log("Plants fetched from DB:", plants);
 
-    // Add status for each plant based on mqttData
-    const plantsWithStatus = plants.map((plant) => ({
-      ...plant,
+    const plantsStatusOnly = plants.map((plant) => ({
+      plantId: plant.id,
       status: checkPlantConditions(plant, mqttData),
     }));
 
-    console.log("Plants with status:", plantsWithStatus);
-
-    res.json(plantsWithStatus);
+    res.json(plantsStatusOnly);
   } catch (error) {
     console.error("❌ Failed to fetch plants or compute status:", error);
     res.status(500).json({ error: "Failed to fetch plants or compute status" });
   }
 });
+
 
 module.exports = router;
