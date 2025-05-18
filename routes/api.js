@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { mqttData } = require("../mqtt/mqttClient");
+const { mqttData, publishAlert } = require("../mqtt/mqttClient");
 const { getPlantsByUserId } = require("../firebase/plant");
 const { checkPlantConditions } = require("../utils/plantStatusChecker");
 
@@ -21,7 +21,7 @@ router.post("/register-uid", (req, res) => {
   res.json({ message: "UID stored in memory" });
 });
 
-// GET /dashboard — returns sensor data + plants + status
+
 router.get("/dashboard", async (req, res) => {
   try {
     if (!registeredUID) {
@@ -30,10 +30,23 @@ router.get("/dashboard", async (req, res) => {
 
     const plants = await getPlantsByUserId(registeredUID);
 
-    const plantsStatusOnly = plants.map((plant) => ({
-      plantId: plant.id,
-      status: checkPlantConditions(plant, mqttData),
-    }));
+    let shouldSendAlert = false;
+
+    const plantsStatusOnly = plants.map((plant) => {
+      const status = checkPlantConditions(plant, mqttData);
+      if (Object.values(status).includes("out of range")) {
+        shouldSendAlert = true;
+      }
+
+      return {
+        plantId: plant.id,
+        status,
+      };
+    });
+
+    if (shouldSendAlert) {
+      publishAlert("danger");
+    }
 
     res.json({
       sensorData: mqttData,
