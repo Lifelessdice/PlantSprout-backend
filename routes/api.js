@@ -45,7 +45,7 @@ router.get("/dashboard", async (req, res) => {
     });
 
     if (shouldSendAlert) {
-      publishAlert("danger");  // send danger if any out of range
+      publishAlert("WARNING");  // send danger if any out of range
     } else {
       publishAlert("CLEAR");   // send clear if all good
     }
