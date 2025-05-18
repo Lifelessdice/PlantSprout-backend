@@ -15,6 +15,8 @@ async function getPlantsByUserId(uid) {
     snapshot.forEach(doc => {
       plants.push({ id: doc.id, ...doc.data() });  // Spread syntax fixed here too
     });
+    
+    console.log("🌱 Plants fetched for user:", JSON.stringify(plants, null, 2));
 
     return plants;
   } catch (error) {
