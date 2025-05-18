@@ -45,7 +45,9 @@ router.get("/dashboard", async (req, res) => {
     });
 
     if (shouldSendAlert) {
-      publishAlert("danger");
+      publishAlert("danger");  // send danger if any out of range
+    } else {
+      publishAlert("CLEAR");   // send clear if all good
     }
 
     res.json({
@@ -57,5 +59,6 @@ router.get("/dashboard", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch dashboard data" });
   }
 });
+
 
 module.exports = router;

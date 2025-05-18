@@ -57,15 +57,25 @@ mqttClient.on("message", function (topic, message) {
   console.log("🌱 Updated Sensor Data:", mqttData);
 });
 
-// ✅ Publish alert function (e.g. "danger")
+// Reusable publish function
 function publishAlert(message) {
   mqttClient.publish("CROWmium/alert", message, {}, (err) => {
     if (err) {
-      console.error(" Failed to publish alert:", err);
+      console.error("Failed to publish alert:", err);
     } else {
-      console.log(` Published alert: ${message}`);
+      console.log(`Published alert: ${message}`);
     }
   });
+}
+
+// Sends a WARNING alert
+function sendWarning() {
+  publishAlert("WARNING");
+}
+
+// Sends a CLEAR alert
+function sendClear() {
+  publishAlert("CLEAR");
 }
 
 module.exports = {
