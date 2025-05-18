@@ -39,7 +39,7 @@ router.get("/dashboard", async (req, res) => {
       }
 
       return {
-        plantId: plant.id,
+        plantId: plant.userPlantId,
         status,
       };
     });
