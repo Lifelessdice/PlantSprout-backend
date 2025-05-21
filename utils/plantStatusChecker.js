@@ -1,30 +1,18 @@
 // utils/plantStatusChecker.js
+
 function checkPlantConditions(plant, sensorData) {
   const results = {};
 
-  results.temperature =
-    sensorData.temperature < plant.preferredTemperature.min ||
-    sensorData.temperature > plant.preferredTemperature.max
-      ? "out of range"
-      : "ok";
+  const check = (value, preferred) => {
+    if (preferred?.min != null && value < preferred.min) return "low";
+    if (preferred?.max != null && value > preferred.max) return "high";
+    return "ok";
+  };
 
-  results.humidity =
-    sensorData.humidity < plant.preferredHumidity.min ||
-    sensorData.humidity > plant.preferredHumidity.max
-      ? "out of range"
-      : "ok";
-
-  results.light =
-    sensorData.light < plant.preferredLight.min ||
-    sensorData.light > plant.preferredLight.max
-      ? "out of range"
-      : "ok";
-
-  results.soilMoisture =
-    sensorData.moisture < plant.preferredSoilMoisture.min ||
-    sensorData.moisture > plant.preferredSoilMoisture.max
-      ? "out of range"
-      : "ok";
+  results.temperature = check(sensorData.temperature, plant.preferredTemperature);
+  results.humidity = check(sensorData.humidity, plant.preferredHumidity);
+  results.light = check(sensorData.light, plant.preferredLight);
+  results.soilMoisture = check(sensorData.moisture, plant.preferredSoilMoisture);
 
   return results;
 }
