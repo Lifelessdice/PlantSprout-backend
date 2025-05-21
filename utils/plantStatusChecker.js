@@ -21,8 +21,8 @@ function checkPlantConditions(plant, sensorData) {
       : "ok";
 
   results.soilMoisture =
-    sensorData.soilMoisture < plant.preferredSoilMoisture.min ||
-    sensorData.soilMoisture > plant.preferredSoilMoisture.max
+    sensorData.moisture < plant.preferredSoilMoisture.min ||
+    sensorData.moisture > plant.preferredSoilMoisture.max
       ? "out of range"
       : "ok";
 
