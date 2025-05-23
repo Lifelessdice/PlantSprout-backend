@@ -1,2 +1,2 @@
-# mqtt-proxy-server
-A simple MQTT proxy server
+# PlantSprout-backend
+A backend server
